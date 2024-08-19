@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>博客系统管理系统</title>
+    <!-- 引入样式文件 -->
+    <link href="./css/index.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="app">
+    <!-- 添加文章表单 -->
+    <div id="addForm">
+        <h3>添加文章</h3>
+        <form>
+            文章标题：
+            <input type="text"  name="editTitle" required placeholder="标题" style="width: 50%;" v-model="blog.title">
+            <br>
+            点赞数量：
+            <input type="text"  name="editTitle" required placeholder="点赞数量" style="width: 50%;" v-model="blog.likes">
+            <br>
+            收藏数量：
+            <input type="text"  name="editTitle" required placeholder="收藏数量" style="width: 50%;" v-model="blog.favours">
+            <br>
+            <br>
+            <div style="text-align: center">
+                <button type="button" style="width: 50px;padding: 10px; margin-right: 17px;" @click="submitAdd()">添加</button>
+                <button type="button" @click="hideAddForm()" style="width: 50px;padding: 10px;">取消</button>
+            </div>
+        </form>
+    </div>
+
+
+    <!-- 编辑文章表单 -->
+    <div id="editForm">
+        <h3 style="text-align: center">编辑文章</h3>
+        <br>
+        <form>
+            文章标题：
+            <input type="text"  name="editTitle" required placeholder="''" style="width: 50%;" v-model="blog.title">
+            <br>
+            点赞数量：
+            <input type="text"  name="editTitle" required placeholder="点赞数量" style="width: 50%;" v-model="blog.likes">
+            <br>
+            收藏数量：
+            <input type="text"  name="editTitle" required placeholder="收藏数量" style="width: 50%;" v-model="blog.favours">
+            <br>
+            <div style="text-align: center">
+                <button type="button" style="width: 50px;padding: 10px; margin-right: 17px;" @click="submitEdit()">保存</button>
+                <button type="button" @click="hideEditForm()" style="width: 50px;padding: 10px;">取消</button>
+            </div>
+        </form>
+    </div>
+
+    <table id="blogTable">
+        <div class="input">
+            <div style="float: left">
+                <input type="text" id="searchInput" placeholder="清输入要查找文章" style="opacity: 0.7"
+                v-model="text">
+                &nbsp;&nbsp;&nbsp;
+                <button class="btn-find" @click="find()">搜索</button>
+            </div>
+
+            <div style="float: right">
+                <button @click="add()" class="btn-edit" style="width: 60px;border-radius: 10px">
+                    添加</button>
+            </div>
+        </div>
+        <thead>
+        <tr>
+            <th style="width: 5%;" class="th-radis">ID</th>
+            <th style="width: 15%;">标题</th>
+            <th style="width: 13%;">点赞数</th>
+            <th style="width: 13%;">收藏数</th>
+            <th style="width: 25%;">更新时间</th>
+            <th style="width: 34%;" class="th-radis">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- 表格数据 -->
+        <tr v-for="item in dataShow">
+            <td>{{ item.id }}</td>
+            <td>{{ item.title }}</td>
+            <td>{{ item.likes }}</td>
+            <td>{{ item.favours }}</td>
+            <td>{{ item.updateTime }}</td>
+            <td>
+                <div class="caozuo_btn">
+                    <button @click="editBlog(item.id)" class="btn-edit">编辑</button>
+                    <button @click="deleteBlog(item.id)" class="btn-del">删除</button>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+<!--    自己手写一个分页条-->
+    <div class="page-helper">
+        <input type="button" value="上一页" @click="prePage">
+        <span v-for="i in pageNum" @click="page(i)" :style="{cursor: 'pointer', margin:'10px'}">{{ i }}</span>
+        <input type="button" value="下一页" @click="nextPage">
+    </div>
+</div>
+
+<script src="https://unpkg.com/vue@next"></script>
+<!-- axios与后台通信 -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</body>
+<script>
+    const vm = Vue.createApp({
+        data() {
+            return {
+                str: [],
+                blog: {
+                    id: 0,
+                    title: '',
+                    likes: 0,
+                    favours: 0,
+                    createTime: '',
+                    updateTime: '',
+                },
+                //每一页展示的条数
+                pageSize: 5,
+                // 默认当前显示第一页
+                currentPage: 0,
+                //一共几页
+                pageNum: 1,
+                // 所有处理之后的数据
+                totalPage: [],
+                // 当前显示的数据
+                dataShow: [],
+                text: '',
+            }
+        },
+        //一定要注意方法的执行顺序，init只有执行完了才能执行下一个方法。
+       async created() {
+          await this.check();
+          await  this.init();
+          await this.initPageHelper();
+        },
+        computed: {
+            // 获取当前的时间 年-月-日 时:分:秒
+            currentTime() {
+                let date = new Date();
+                return date.getFullYear() + '-' + (date.getMonth() + 1) + '-' + date.getDate() + ' ' + date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds();
+            }
+        },
+        methods: {
+            async inits() {
+                await  this.init();
+                await this.initPageHelper();
+                this.hideForm('editForm');
+                this.hideForm('addForm');
+            },
+            //验证用户是否登录成功
+            check() {
+                let item = localStorage.getItem("changge");
+                //将取出的值转化为对象
+                let dateObj = JSON.parse(item);
+
+                if(dateObj !== null && dateObj !== undefined)
+                {
+                    if('changge' === dateObj.username && '123456' === dateObj.password)
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    console.log("登录失败")
+                    location.href = './login.html'
+                }
+            },
+            initPageHelper:  function() {
+                    this.currentPage = 0;
+                    this.pageNum = Math.ceil(this.str.length / this.pageSize) || 1;//计算有多少页数据，默认为1
+                    // 循环页面
+                    for (let i = 0; i < this.pageNum; i++) {
+                    // 每一页都是一个数组 形如 [['第一页的数据'],['第二页的数据'],['第三页数据']]
+                    // 根据每页显示数量 将后台的数据分割到 每一页,假设pageSize为2， 则第一页是1-2条，即slice(0,2)，第二页是3-4条，即slice(3,4)以此类推
+                    this.totalPage[i] = this.str.slice(this.pageSize * i, this.pageSize * (i + 1))
+                }
+                // 获取到数据后默认显示第一页内容
+                this.dataShow = this.totalPage[this.currentPage];
+            },
+            init: async function() {
+               await axios.get('http://localhost:8080/blog/query',{
+                    params: {
+                        ops: 'query',
+                        current: this.current,
+                        pageSize: this.pageSize
+                    }
+                }).then(
+                    (res) => {
+                        this.str = res.data;
+                    }
+                )
+            },
+            //查找
+            find(){
+                axios.get('http://localhost:8080/blog/query',{
+                    params: {
+                        ops: 'find',
+                        text: this.text
+                    }
+                }).then(
+                    (res) => {
+                        this.str = res.data;
+                        this.init();
+                        this.initPageHelper();
+                    }
+                )
+            },
+
+            //显示添加文章表单
+            add: function () {
+                this.showForm('addForm');
+            },
+            //显示编辑文章表单
+            editBlog:function (id) {
+                this.showForm('editForm');
+                axios.get('http://localhost:8080/blog/query',{
+                    params: {
+                        ops: 'one',
+                        queryone: id,
+                    }
+                }).then(
+                    (res) => {
+                        this.blog.favours = res.data.favours;
+                        this.blog.likes = res.data.likes;
+                        this.blog.title = res.data.title;
+                        this.blog.createTime = res.data.createTime;
+                        this.blog.updateTime = res.data.updateTime;
+                        this.blog.id = res.data.id;
+                    }
+                )
+            },
+
+            //隐藏编辑表单
+            hideEditForm:function (){
+                this.hideForm('editForm');
+                this.blog.favours = 0
+                this.blog.likes = 0
+                this.blog.title = ''
+                this.blog.createTime = ''
+                this.blog.updateTime = ''
+                this.blog.id = 0
+            },
+            //隐藏添加表单
+            hideAddForm:function () {
+                this.hideForm('addForm');
+                this.blog.favours = 0
+                this.blog.likes = 0
+                this.blog.title = ''
+                this.blog.createTime = ''
+                this.blog.updateTime = ''
+                this.blog.id = 0
+            },
+
+            //显示添加文章表单或编辑文章表单
+            showForm:function (formId){
+                document.getElementById(formId).style.display = 'block';
+            },
+            //隐藏添加文章表单或编辑文章表单
+            hideForm:function (formId) {
+                document.getElementById(formId).style.display = 'none';
+            },
+
+            //用户点击添加文章的保存按钮时
+            //一定要改为同步的请求，一般post请求会比get请求慢，有可能下面的init方法会获取之前的this.str,导致新的数据
+            //获取不到，最终导致页面不刷新.
+            async submitAdd() {
+                this.blog.createTime = this.currentTime
+                this.blog.updateTime = this.currentTime
+                await axios.post("http://localhost:8080/blog/add",this.blog).then(
+                    (res) => {
+                        console.log(res)
+                    }
+                )
+                this.inits();
+            },
+            //用户点击编辑按钮的保存按钮时
+            async submitEdit() {
+                this.blog.updateTime = this.currentTime;
+                //将数据发送到后端
+                //这里乱码了
+                await axios.put('http://localhost:8080/blog/update',JSON.stringify(this.blog)).then(
+                    (res) => {
+                        console.log(res.data)
+                    }
+                )
+                this.inits();
+            },
+
+            //删除按钮
+            async deleteBlog(id) {
+                // 在实际应用中，可以弹出确认框等，然后删除数据
+                const confirmDelete = confirm('确定要删除该文章吗？');
+                if (confirmDelete) {
+                    //还需要加载表格数据
+                   await axios.delete('http://localhost:8080/blog/del?delete=' + id,null).then(
+                        (res) => {
+                            console.log(res.data)
+                        }
+                    )
+                    this.inits();
+                }
+            },
+
+            // 下一页
+            nextPage() {
+                if (this.currentPage === this.pageNum - 1) return ;
+                this.dataShow = this.totalPage[++this.currentPage];
+            },
+            // 上一页
+            prePage() {
+                if (this.currentPage === 0) return ;
+                this.dataShow = this.totalPage[--this.currentPage];
+            },
+            // 点击页码
+            page(i){
+                this.currentPage = i
+                this.dataShow = this.totalPage[i-1];
+            }
+        }
+    }).mount('#app');
+</script>
+</html>

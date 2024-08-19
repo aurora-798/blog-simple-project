@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注册</title>
+</head>
+<link rel="stylesheet" href="./css/common.css">
+<style>
+    body {
+        width: 100%;
+        height: 100%;
+        background-image: url('./img/img1.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+   
+</style>
+ 
+<body>
+ 
+    <div class="header">
+        <h2>注册</h2>
+        </span>
+        <label for="username"><span>用户名：</span><input type="text" id="use"></label>
+        <br>
+        <label for="password"><span>密码:</span><input type="password" id="pwd"></label>
+        <br>
+        <label for="password"><span>确认密码 </span><input type="password" id="pwd2"> </label>
+        <br>
+        <div>
+            <button onclick="login()" class="btn-zhuce">注册</button>
+            <button><a href="./login.html">去登录</a></button>
+        </div>
+    </div>
+  <script>
+ 
+        function login() {
+            //获取用户输入的用户名和密码
+            //changge
+            let username = document.querySelector('#use').value;
+            // 123456
+            let password = document.querySelector('#pwd').value;
+
+            //将用户名和密码保存到本地
+            Date(username, password);
+        }
+        //将数据存入本地
+        function Date(username, password) {
+            localStorage.setItem(username, JSON.stringify({
+                username,
+                password,
+                tag: false
+            }))
+            if (username === '' || password === '') {
+                alert('请先注册');
+            }
+            //判断两次密码是否一样
+            else if (pwd.value != pwd2.value) {
+                //不一样的话重新输入
+                alert('两次输入密码不一样 请重新输入');
+            } else {
+                //一样则提示注册成功
+                alert('注册成功 ! ! !')
+            }
+ 
+        }
+ 
+    </script>
+</body>
+ 
+</html>

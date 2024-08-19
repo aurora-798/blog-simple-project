@@ -1,0 +1,65 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+a {
+  text-decoration: none;
+  color: #fff;
+  font-size: 18px;
+}
+.header {
+  width: 400px;
+  height: 450px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  margin: 100px 0 0 200px;
+  padding: 20px;
+}
+.header h2 {
+  font-size: 24px;
+  margin-top: 15px;
+  color: rgba(255, 255, 255, 0.7);
+}
+.header > label {
+  margin-top: 40px;
+  width: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header > label span {
+  font-size: 24px;
+  color: #fff;
+}
+.header > label input {
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  padding: 0 20px;
+  background-color: rgba(255, 255, 255, 0.6);
+  box-sizing: border-box;
+  outline: none;
+  width: 240px;
+  height: 30px;
+  font-size: 18px;
+}
+.header > div {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-around;
+  width: 325px;
+}
+.header > div button {
+  width: 100px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  color: #fff;
+}
+
+.btn-zhuce {
+  cursor: pointer;
+}

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+ 
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <link rel="stylesheet" href="./css/common.css">
+<style>
+    a {
+        text-decoration: none;
+        color: #fff;
+    }
+ 
+    body {
+        width: 100%;
+        height: 100%;
+        background-image: url('./img/img2.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+ 
+    .header {
+        width: 400px;
+        height: 450px;
+        background: rgba(0, 0, 0, .2);
+        border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        margin: 100px 0 0 200px;
+        padding: 20px;
+    }
+ 
+    h2 {
+        font-size: 24px;
+        color: #fff;
+    }
+ 
+    label {
+        margin-top: 40px;
+        width: 350px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+ 
+    label>span {
+        font-size: 24px;
+        color: #fff;
+    }
+ 
+    label>input {
+        border-radius: 20px;
+        border: 1px solid #ccc;
+        padding: 0 20px;
+        background-color: rgba(255, 255, 255, .6);
+        box-sizing: border-box;
+        outline: none;
+        width: 240px;
+        height: 30px;
+        font-size: 18px;
+    }
+ 
+    .del {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-around;
+        width: 325px;
+    }
+ 
+ 
+    .pwsd {
+        display: flex;
+        margin-top: 45px;
+    }
+ 
+    .pwsd>input {
+        width: 24px;
+        height: 24px;
+ 
+    }
+ 
+    .pwsd>span {
+        font-size: 18px;
+        color: #fff;
+        margin-left: 20px;
+    }
+ 
+    button {
+        width: 100px;
+        height: 40px;
+        background: rgba(0, 0, 0, .6);
+        border: none;
+        border-radius: 12px;
+        font-size: 18px;
+        color: #fff;
+ 
+    }
+</style>
+</head>
+
+<body>
+    <div class="header">
+        <h2>登录</h2>
+        <label for="use"><span>用户名：</span><input type="text" id="use"></label>
+        <br>
+        <label for="pwd"><span>密码:</span><input type="password" id="pwd"></label>
+        <br>
+        <div class="pwsd">
+            <input type="checkbox" id="cbx"><span>记住密码</span>
+        </div>
+        <div class="del">
+            <button onclick="login()" class="btn-zhuce">登录</button>
+            <button><a href="./zhuce.html">去注册</a></button>
+        </div>
+    </div>
+        <script>
+            //用户名
+            let use = document.getElementById('use');
+            //密码
+            let pwd = document.getElementById('pwd');
+            //记住密码
+            let cbx = document.getElementById('cbx');
+            function login() {
+                //登录
+                let dateUse = localStorage.getItem(use.value);
+                let dateObj = JSON.parse(dateUse);//将取出的值转化为对象
+                if (use.value === dateObj.username && pwd.value === dateObj.password) {
+                    alert('登陆成功');
+                    //更新记录密码的状态
+                    dateObj.tag = cbx.checked;
+                    location.href = './index.html';
+                } 
+                else {
+                    alert('用户名或者密码错误')
+                }
+            }
+            use.onblur = function () {//用户失去焦点事件s
+                //取出用户的值
+                let res = localStorage.getItem(use.value);
+                //将用户值转化为对象
+                res = JSON.parse(res);
+                if (res != null && res.tag) {//本地是否有该账号
+                    cbx.checked = true;
+                    pwd.value = res.password;
+                }
+            }
+ 
+        </script>
+</body>
+ 
+</html>
